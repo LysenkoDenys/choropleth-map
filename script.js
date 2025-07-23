@@ -80,7 +80,32 @@ const getData = async () => {
       .attr('data-education', (d) => {
         const county = educationMap.get(d.id);
         return county ? county.bachelorsOrHigher : 0;
+      })
+      // ========================================================
+      .on('mouseover', function (event, d) {
+        const county = educationMap.get(d.id);
+        if (county) {
+          tooltip
+            .style('opacity', 1)
+            .style('display', 'block')
+            .attr('data-education', county.bachelorsOrHigher)
+            .html(
+              `<strong>${county.area_name}, ${county.state}</strong>: ${county.bachelorsOrHigher}%`
+            )
+            .style(
+              'left',
+              Math.min(event.pageX + 10, window.innerWidth - 150) + 'px'
+            )
+            .style('top', event.pageY - 40 + 'px');
+        }
+        d3.select(this).attr('stroke', 'black').transition().duration(200);
+      })
+
+      .on('mouseout', function () {
+        tooltip.style('opacity', 0).style('display', 'none');
+        d3.select(this).attr('stroke', null);
       });
+    //===========================================================;
     drawLegend(svg, w, color);
   } catch (error) {
     console.error('Failed to load data:', error);
@@ -140,3 +165,10 @@ const drawLegend = (svg, w, color) => {
     .attr('transform', `translate(0, ${legendHeight})`)
     .call(xAxisLegend);
 };
+
+// [
+//   {
+//     "fips": 1001,
+//     "state": "AL",
+//     "area_name": "Autauga County",
+//     "bachelorsOrHigher": 21.9
