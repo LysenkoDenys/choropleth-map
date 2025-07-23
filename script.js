@@ -55,8 +55,15 @@ const getData = async () => {
     // Create a color scale:
     const color = d3
       .scaleThreshold()
-      .domain([10, 20, 30, 40])
-      .range(d3.schemeReds[5]);
+      .domain([0, 10, 20, 30, 40, 50])
+      .range([
+        '#fef0d9',
+        '#fddbc7',
+        '#f4a582',
+        '#d6604d',
+        '#b2182b',
+        '#67001f',
+      ]);
 
     // Draw counties
     svg
@@ -74,70 +81,62 @@ const getData = async () => {
         const county = educationMap.get(d.id);
         return county ? county.bachelorsOrHigher : 0;
       });
+    drawLegend(svg, w, color);
   } catch (error) {
     console.error('Failed to load data:', error);
   }
 };
 getData();
 
-// [
-//   {
-//     "fips": 1001,
-//     "state": "AL",
-//     "area_name": "Autauga County",
-//     "bachelorsOrHigher": 21.9
-//   },
-//   {
-//     "fips": 1003,
-//     "state": "AL",
-//     "area_name": "Baldwin County",
-//     "bachelorsOrHigher": 28.6
-//   },
+const drawLegend = (svg, w, color) => {
+  const legendWidth = 200;
+  const legendHeight = 10;
+  const boxWidth = legendWidth / color.range().length;
+  const legendX = (w - legendWidth) / 2;
+  const legendY = 15;
 
-// {
-// "type": "Topology",
-// "objects": {
-//   "counties": {
-//     "type": "GeometryCollection",
-//     "geometries": [
-//       {
-//         "type": "Polygon",
-//         "id": 5089,
-//         "arcs": [
-//           [
-//             0,
-//             1,
-//             2,
-//             3,
-//             4
-//           ]
-//         ]
-//       },
-//       {
-//         "type": "Polygon",
-//         "id": 6079,
-//         "arcs": [
-//           [
-//             5,
-//             6,
-//             7,
-//             8,
-//             9
-//           ]
-//         ]
-//       },
-//       {
-//         "type": "Polygon",
-//         "id": 17111,
-//         "arcs": [
-//           [
-//             10,
-//             11,
-//             12,
-//             13,
-//             14,
-//             15,
-//             16
-//           ]
-//         ]
-//       },
+  const legend = svg
+    .append('g')
+    .attr('id', 'legend')
+    .attr('transform', `translate(${legendX}, ${legendY})`);
+
+  const x = d3
+    .scaleLinear()
+    .domain([color.domain()[0], color.domain()[color.domain().length - 1]])
+    .range([0, legendWidth]);
+
+  legend
+    .selectAll('rect')
+    .data(color.range())
+    .enter()
+    .append('rect')
+    .attr('x', (d) => {
+      const [x0, _] = color.invertExtent(d);
+      return x(x0);
+    })
+    .attr('width', (d) => {
+      const [x0, x1] = color.invertExtent(d);
+      return x(x1) - x(x0);
+    })
+    .attr('height', legendHeight)
+    .attr('fill', (d) => d)
+    .attr('stroke', '#ccc');
+
+  const xScaleLegend = d3
+    .scaleLinear()
+    .domain([color.domain()[0], color.domain()[color.domain().length - 1]])
+    .range([0, legendWidth]);
+
+  const legendThresholds = [0, ...color.domain()];
+
+  const xAxisLegend = d3
+    .axisBottom(xScaleLegend)
+    .tickValues(legendThresholds)
+    .tickFormat((d) => `${d}%`);
+
+  legend
+    .append('g')
+    .attr('id', 'x-axis-legend')
+    .attr('transform', `translate(0, ${legendHeight})`)
+    .call(xAxisLegend);
+};
