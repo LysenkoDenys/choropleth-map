@@ -78,5 +78,9 @@ svg {
   border-radius: 5px;
   font-size: 12px;
   pointer-events: none;
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.county {
+  transition: fill 0.3s ease;
 }
