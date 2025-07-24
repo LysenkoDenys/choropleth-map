@@ -95,8 +95,7 @@ const drawCounties = (svg, counties, educationMap, color, tooltip) => {
         .attr('stroke', '#000')
         .transition()
         .duration(200)
-        .attr('stroke-width', 1.5)
-        .raise();
+        .attr('stroke-width', 1.5);
     })
 
     .on('mouseout', function () {
